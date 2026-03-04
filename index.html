@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PriceRight — Etsy Seller Pricing Calculator</title>
+
+<!-- Google Analytics GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4ZFGXSQS8M"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-4ZFGXSQS8M');
+
+  // Custom event tracking
+  function trackEvent(action, category, label) {
+    gtag('event', action, {
+      event_category: category,
+      event_label: label
+    });
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F0F2F5;
+  --white: #FFFFFF;
+  --clay: #C4694F;
+  --clay-light: rgba(196,105,79,0.1);
+  --bark: #111827;
+  --bark-mid: #374151;
+  --bark-light: #6B7280;
+  --sage: #16A34A;
+  --sage-light: rgba(22,163,74,0.1);
+  --gold: #D4A847;
+  --gold-light: #F0CC7A;
+  --indigo: #4F46E5;
+  --indigo-light: rgba(79,70,229,0.08);
+  --red: #DC2626;
+  --amber: #D97706;
+  --border: #E5E7EB;
+  --shadow: 0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--bark);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 1.2rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--bark);
+}
+.logo span { color: var(--clay); }
+
+.header-actions { display: flex; gap: 0.6rem; align-items: center; }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(135deg, #1A1A2E 0%, #16213E 60%, #0F3460 100%);
+  color: white;
+  text-align: center;
+  padding: 3rem 1.5rem 2.5rem;
+}
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 0.7rem;
+  color: white;
+}
+.hero h1 em { font-style: normal; color: var(--gold-light); }
+
+.hero p {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.65);
+  max-width: 480px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.6;
+}
+
+/* ── PLATFORM TABS ── */
+.platform-tabs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
+
+.platform-btn {
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.7);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.platform-btn.active {
+  background: var(--clay);
+  border-color: var(--clay);
+  color: white;
+}
+
+/* ── GOAL BANNER (Profit Goal Mode) ── */
+.goal-banner {
+  background: var(--indigo);
+  color: white;
+  padding: 0.7rem 1.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.goal-banner.active { display: flex; }
+
+.goal-banner strong { font-size: 1rem; }
+
+/* ── MAIN LAYOUT ── */
+.app-body {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.5rem 1.2rem 4rem;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1.4rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) { .app-body { grid-template-columns: 1fr; } }
+
+/* ── LEFT SIDEBAR ── */
+.sidebar { display: flex; flex-direction: column; gap: 1.2rem; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 1.6rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+
+.card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--bark);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 0.18rem 0.5rem;
+  border-radius: 4px;
+  background: var(--clay-light);
+  color: var(--clay);
+}
+
+.badge.new { background: rgba(22,163,74,0.1); color: var(--sage); }
+.badge.pro { background: var(--indigo-light); color: var(--indigo); }
+
+/* ── FORM FIELDS ── */
+.field { margin-bottom: 0.95rem; }
+
+.field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--bark-light);
+  margin-bottom: 0.35rem;
+}
+
+.input-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pfx, .sfx {
+  position: absolute;
+  font-size: 0.88rem;
+  color: var(--bark-light);
+  pointer-events: none;
+  font-weight: 500;
+}
+.pfx { left: 0.75rem; }
+.sfx { right: 0.75rem; font-size: 0.78rem; }
+
+input[type="number"], input[type="text"], select {
+  width: 100%;
+  padding: 0.6rem 2rem 0.6rem 1.75rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  color: var(--bark);
+  background: #F9FAFB;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -moz-appearance: textfield;
+}
+
+input[type="text"] { padding-left: 0.75rem; }
+select { padding-left: 0.75rem; cursor: pointer; }
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--clay);
+  box-shadow: 0 0 0 3px rgba(196,105,79,0.12);
+  background: white;
+}
+
+.hint {
+  font-size: 0.7rem;
+  color: var(--bark-light);
+  margin-top: 0.22rem;
+  line-height: 1.4;
+}
+
+.divider {
+  border: none;
+  border-top: 1px dashed var(--border);
+  margin: 1rem 0;
+}
+
+/* ── TOGGLES ── */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--bark-mid);
+  margin-bottom: 0.8rem;
+  font-weight: 500;
+}
+
+.toggle {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.toggle input { opacity: 0; width: 0; height: 0; }
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #D1D5DB;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.toggle-slider:before {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  left: 3px; top: 3px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle input:checked + .toggle-slider { background: var(--clay); }
+.toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
+
+/* ── RIGHT PANEL ── */
+.right-panel { display: flex; flex-direction: column; gap: 1.2rem; }
+
+/* ── RESULTS CARD ── */
+.results-card {
+  background: linear-gradient(135deg, #1A1A2E, #16213E);
+  color: white;
+  border-radius: 14px;
+  padding: 1.8rem;
+  box-shadow: 0 8px 32px rgba(26,26,46,0.3);
+}
+
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.4rem;
+}
+
+.results-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  color: var(--gold-light);
+}
+
+.platform-fee-note {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  text-align: right;
+}
+
+.prices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.4rem;
+}
+
+.price-box {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.price-box.primary {
+  border-color: rgba(212,168,71,0.4);
+  background: rgba(212,168,71,0.08);
+}
+
+.price-box-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 0.35rem;
+}
+
+.price-box-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+  color: white;
+}
+
+.price-box.primary .price-box-value { color: var(--gold-light); }
+
+.price-box-sub {
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.35);
+  margin-top: 0.25rem;
+}
+
+/* ── BREAKDOWN ── */
+.breakdown { display: flex; flex-direction: column; gap: 0.45rem; margin-bottom: 1.2rem; }
+
+.breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.breakdown-label { color: rgba(255,255,255,0.5); }
+.breakdown-value { color: rgba(255,255,255,0.9); font-weight: 500; }
+.breakdown-value.green { color: #4ADE80; }
+.breakdown-value.red { color: #F87171; }
+
+.section-line {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin: 0.6rem 0;
+}
+
+/* ── HOURLY WORTH BADGE ── */
+.hourly-worth {
+  background: rgba(79,70,229,0.2);
+  border: 1px solid rgba(79,70,229,0.3);
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.5;
+  margin-bottom: 0.9rem;
+}
+
+.hourly-worth strong { color: #A5B4FC; }
+
+/* ── CURRENT PRICE CHECK ── */
+.my-price-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.my-price-row label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  margin-bottom: 0;
+}
+
+.my-price-row .price-input-wrap {
+  flex: 1;
+  position: relative;
+}
+
+.my-price-row .price-input-wrap input {
+  width: 100%;
+  padding: 0.5rem 0.5rem 0.5rem 1.4rem;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: white;
+  border-radius: 6px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+}
+
+.my-price-row .price-input-wrap input::placeholder { color: rgba(255,255,255,0.25); }
+.my-price-row .price-input-wrap input:focus { border-color: var(--gold); background: rgba(255,255,255,0.1); outline: none; }
+.my-price-row .price-input-wrap .pfx { color: rgba(255,255,255,0.35); left: 0.5rem; }
+
+.alert-banner {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  padding: 0.65rem 0.85rem;
+  border-radius: 7px;
+  margin-top: 0.6rem;
+  display: none;
+}
+
+.alert-banner.warn { background: rgba(217,119,6,0.15); border: 1px solid rgba(217,119,6,0.3); color: #FCD34D; display: block; }
+.alert-banner.good { background: rgba(22,163,74,0.15); border: 1px solid rgba(22,163,74,0.3); color: #6EE7B7; display: block; }
+
+/* ── GOAL MODE CARD ── */
+.goal-card { display: none; }
+.goal-card.active { display: block; }
+
+.goal-result {
+  background: var(--indigo-light);
+  border: 1px solid rgba(79,70,229,0.2);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--bark-mid);
+}
+
+.goal-result strong { color: var(--indigo); font-size: 1rem; }
+
+/* ── MULTI-PRODUCT TABLE ── */
+.products-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+.products-table th {
+  text-align: left;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--bark-light);
+  border-bottom: 1px solid var(--border);
+}
+.products-table td {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid #F3F4F6;
+  color: var(--bark-mid);
+}
+.products-table tr:hover td { background: #F9FAFB; }
+.products-table .del-btn {
+  background: none;
+  border: none;
+  color: #D1D5DB;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  transition: color 0.2s;
+}
+.products-table .del-btn:hover { color: var(--clay); }
+.products-table .price-cell { font-weight: 600; color: var(--bark); }
+.products-table .profit-cell { color: var(--sage); font-weight: 600; }
+
+/* ── COMPETITOR BARS ── */
+.comp-entry {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+.comp-entry input[type="text"] { flex: 2; font-size: 0.82rem; }
+.comp-price-wrap { flex: 1; position: relative; }
+.comp-price-wrap .pfx { font-size: 0.8rem; }
+.comp-entry input[type="number"] { font-size: 0.82rem; padding-left: 1.5rem; }
+.remove-btn { background: none; border: none; color: #D1D5DB; cursor: pointer; font-size: 1.1rem; transition: color 0.2s; }
+.remove-btn:hover { color: var(--clay); }
+
+.comp-bar-row { margin-bottom: 0.55rem; }
+.comp-bar-label { display: flex; justify-content: space-between; font-size: 0.73rem; color: var(--bark-mid); margin-bottom: 0.2rem; }
+.comp-bar-track { background: #F3F4F6; border-radius: 4px; height: 7px; overflow: hidden; }
+.comp-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+
+.comp-summary {
+  font-size: 0.77rem;
+  color: var(--bark-light);
+  background: #F9FAFB;
+  border-radius: 7px;
+  padding: 0.6rem 0.8rem;
+  margin-top: 0.7rem;
+  border: 1px solid var(--border);
+  line-height: 1.5;
+}
+.comp-summary strong { color: var(--clay); }
+
+/* ── CATEGORY SUGGESTION ── */
+.category-suggest {
+  background: var(--sage-light);
+  border: 1px solid rgba(22,163,74,0.2);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--bark-mid);
+  display: none;
+}
+.category-suggest.show { display: block; }
+.category-suggest strong { color: var(--sage); }
+
+/* ── SHARE CARD ── */
+.share-card-preview {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.share-card-inner {
+  background: linear-gradient(135deg, #1A1A2E, #0F3460);
+  color: white;
+  padding: 1.5rem;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.share-card-inner .sc-logo { font-family: 'Playfair Display', serif; font-size: 0.85rem; color: var(--gold-light); margin-bottom: 0.8rem; }
+.share-card-inner .sc-product { font-size: 0.9rem; color: rgba(255,255,255,0.6); margin-bottom: 0.4rem; }
+.share-card-inner .sc-price { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: var(--gold-light); line-height: 1; margin-bottom: 0.3rem; }
+.share-card-inner .sc-sub { font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-bottom: 1rem; }
+.share-card-inner .sc-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.6rem; }
+.share-card-inner .sc-stat { background: rgba(255,255,255,0.07); border-radius: 6px; padding: 0.5rem 0.4rem; text-align: center; }
+.share-card-inner .sc-stat-val { font-size: 0.9rem; font-weight: 600; color: white; }
+.share-card-inner .sc-stat-lbl { font-size: 0.6rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.06em; }
+.share-card-inner .sc-tag { font-size: 0.65rem; color: rgba(255,255,255,0.3); margin-top: 0.8rem; text-align: right; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary { background: var(--clay); color: white; }
+.btn-primary:hover { background: #A85540; }
+.btn-secondary { background: #F3F4F6; color: var(--bark-mid); border: 1px solid var(--border); }
+.btn-secondary:hover { background: #E5E7EB; }
+.btn-ghost { background: transparent; color: var(--bark-light); border: 1.5px dashed var(--border); width: 100%; justify-content: center; margin-top: 0.4rem; }
+.btn-ghost:hover { border-color: var(--clay); color: var(--clay); }
+.btn-indigo { background: var(--indigo); color: white; }
+.btn-indigo:hover { background: #4338CA; }
+.btn-sm { padding: 0.38rem 0.75rem; font-size: 0.75rem; }
+
+/* ── SEASONAL TOGGLE ── */
+.seasonal-note {
+  font-size: 0.75rem;
+  color: var(--amber);
+  background: rgba(217,119,6,0.08);
+  border: 1px solid rgba(217,119,6,0.2);
+  border-radius: 6px;
+  padding: 0.5rem 0.7rem;
+  margin-top: 0.6rem;
+  display: none;
+}
+.seasonal-note.show { display: block; }
+
+/* ── ETSY FEE ALERT ── */
+.fee-alert {
+  background: rgba(220,38,38,0.07);
+  border: 1px solid rgba(220,38,38,0.2);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.78rem;
+  color: #B91C1C;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* ── QUIZ CARD ── */
+.quiz-step { display: none; }
+.quiz-step.active { display: block; }
+
+.quiz-options { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.7rem; }
+
+.quiz-option {
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--bark-mid);
+  background: #F9FAFB;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.quiz-option:hover { border-color: var(--clay); color: var(--clay); background: var(--clay-light); }
+.quiz-option.selected { border-color: var(--clay); background: var(--clay-light); color: var(--clay); font-weight: 600; }
+
+.quiz-result {
+  background: var(--clay-light);
+  border: 1px solid rgba(196,105,79,0.2);
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  font-size: 0.82rem;
+  color: var(--bark-mid);
+  line-height: 1.6;
+}
+.quiz-result strong { color: var(--clay); font-size: 1rem; display: block; margin-bottom: 0.3rem; }
+
+/* ── TABS ── */
+.tab-nav { display: flex; gap: 0.3rem; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+
+.tab-btn {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--bark-light);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: -1px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.tab-btn.active { color: var(--clay); border-bottom-color: var(--clay); }
+
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── WHOLESALE ── */
+.wholesale-price {
+  background: linear-gradient(135deg, rgba(79,70,229,0.08), rgba(79,70,229,0.03));
+  border: 1px solid rgba(79,70,229,0.15);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.wholesale-price .wlbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--indigo); font-weight: 600; }
+.wholesale-price .wval { font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--indigo); font-weight: 700; line-height: 1.1; }
+.wholesale-price .wsub { font-size: 0.72rem; color: var(--bark-light); margin-top: 0.2rem; }
+
+/* ── EMAIL CAPTURE BANNER ── */
+.email-banner {
+  background: linear-gradient(135deg, #1A1A2E 0%, #2D1B69 100%);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  color: white;
+}
+
+.email-banner h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: white;
+}
+
+.email-banner h2 em { font-style: normal; color: var(--gold-light); }
+
+.email-banner p {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.6);
+  max-width: 420px;
+  margin: 0 auto 1.2rem;
+  line-height: 1.6;
+}
+
+.email-form {
+  display: flex;
+  gap: 0.6rem;
+  max-width: 420px;
+  margin: 0 auto 0.7rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.email-form input[type="email"] {
+  flex: 1;
+  min-width: 220px;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  color: var(--bark);
+  background: white;
+}
+
+.email-form input[type="email"]:focus { outline: 2px solid var(--gold); }
+
+.email-form button {
+  padding: 0.7rem 1.4rem;
+  background: var(--clay);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.email-form button:hover { background: #A85540; }
+
+.email-success {
+  display: none;
+  background: rgba(22,163,74,0.15);
+  border: 1px solid rgba(22,163,74,0.3);
+  color: #6EE7B7;
+  border-radius: 8px;
+  padding: 0.8rem 1.2rem;
+  font-size: 0.85rem;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.email-perks {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 0.5rem;
+}
+
+/* ── AFFILIATE SECTION ── */
+.affiliate-section {
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  padding: 2rem 1.5rem;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.affiliate-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--bark);
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+
+.affiliate-sub {
+  font-size: 0.78rem;
+  color: var(--bark-light);
+  text-align: center;
+  margin-bottom: 1.4rem;
+}
+
+.affiliate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.affiliate-card {
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+
+.affiliate-card:hover {
+  border-color: var(--clay);
+  box-shadow: 0 4px 16px rgba(196,105,79,0.12);
+  transform: translateY(-2px);
+}
+
+.affiliate-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--clay);
+  transform: scaleX(0);
+  transition: transform 0.2s;
+}
+
+.affiliate-card:hover::before { transform: scaleX(1); }
+
+.aff-emoji { font-size: 1.4rem; margin-bottom: 0.4rem; display: block; }
+.aff-name { font-weight: 700; font-size: 0.88rem; color: var(--bark); margin-bottom: 0.2rem; }
+.aff-desc { font-size: 0.73rem; color: var(--bark-light); line-height: 1.4; margin-bottom: 0.5rem; }
+.aff-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: var(--sage-light);
+  color: var(--sage);
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+}
+
+/* ── BMC BUTTON ── */
+.bmc-float {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.bmc-bubble {
+  background: white;
+  color: var(--bark-mid);
+  font-size: 0.72rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+  white-space: nowrap;
+  animation: bob 3s ease-in-out infinite;
+}
+
+@keyframes bob {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.bmc-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #FFDD00;
+  color: #000;
+  padding: 0.65rem 1.1rem;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.88rem;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.bmc-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  font-size: 0.72rem;
+  color: var(--bark-light);
+  border-top: 1px solid var(--border);
+  background: var(--white);
+}
+
+/* ── SECTION TITLES ── */
+.section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--bark-light);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* notifications */
+.toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background: var(--bark);
+  color: white;
+  padding: 0.75rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.83rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all 0.3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Price<span>Right</span></div>
+  <div class="header-actions">
+    <button class="btn btn-secondary btn-sm" onclick="toggleGoalMode()">🎯 Goal Mode</button>
+    <button class="btn btn-secondary btn-sm" onclick="showShareCard()">📤 Share Card</button>
+    <button class="btn btn-primary btn-sm" onclick="saveProduct()">💾 Save Product</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Stop <em>undercharging</em><br>for your work.</h1>
+  <p>The only pricing calculator built for handmade sellers. Know your real numbers across every platform.</p>
+  <p style="font-size:0.82rem; color:rgba(255,255,255,0.45); margin-top:-0.7rem; margin-bottom:1.2rem; font-style:italic;">Built by an Etsy seller, for Etsy sellers.</p>
+  <div class="platform-tabs">
+    <button class="platform-btn active" onclick="setPlatform('etsy', this)">🛍 Etsy</button>
+    <button class="platform-btn" onclick="setPlatform('shopify', this)">⚡ Shopify</button>
+    <button class="platform-btn" onclick="setPlatform('amazon', this)">📦 Amazon Handmade</button>
+    <button class="platform-btn" onclick="setPlatform('ebay', this)">🏷 eBay</button>
+  </div>
+</div>
+
+<!-- FEE CHANGE ALERT -->
+<div class="fee-alert" style="margin:0.8rem 1.2rem; max-width:1280px; margin-left:auto; margin-right:auto; display:none" id="fee-alert">
+  🔔 <span id="fee-alert-text"></span>
+</div>
+
+<!-- GOAL BANNER -->
+<div class="goal-banner" id="goal-banner">
+  <span>🎯 Goal Mode: To earn <strong id="goal-display">$0</strong>/mo, sell <strong id="goal-units">—</strong> units at your recommended price</span>
+  <button class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;border:none" onclick="toggleGoalMode()">✕ Exit</button>
+</div>
+
+<!-- MAIN -->
+<div class="app-body">
+
+  <!-- ── LEFT SIDEBAR ── -->
+  <div class="sidebar">
+
+    <!-- HOURLY WORTH QUIZ -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">⭐ Hourly Worth Quiz <span class="badge new">new</span></div>
+      </div>
+      <p style="font-size:0.78rem;color:var(--bark-light);margin-bottom:0.9rem;line-height:1.5">Is your hourly rate realistic for your niche? Answer 3 quick questions.</p>
+
+      <div id="quiz-step-0" class="quiz-step active">
+        <div style="font-size:0.82rem;font-weight:600;color:var(--bark-mid)">What type of items do you sell?</div>
+        <div class="quiz-options">
+          <button class="quiz-option" onclick="quizAnswer(0,'jewelry')">💍 Jewelry & Accessories</button>
+          <button class="quiz-option" onclick="quizAnswer(0,'textiles')">🧶 Textiles & Fiber Arts</button>
+          <button class="quiz-option" onclick="quizAnswer(0,'ceramics')">🏺 Ceramics & Pottery</button>
+          <button class="quiz-option" onclick="quizAnswer(0,'digital')">🖼 Art Prints & Digital</button>
+          <button class="quiz-option" onclick="quizAnswer(0,'woodwork')">🪵 Woodwork & Home Decor</button>
+        </div>
+      </div>
+
+      <div id="quiz-step-1" class="quiz-step">
+        <div style="font-size:0.82rem;font-weight:600;color:var(--bark-mid)">How many years of experience?</div>
+        <div class="quiz-options">
+          <button class="quiz-option" onclick="quizAnswer(1,'beginner')">Just starting out (&lt;1 yr)</button>
+          <button class="quiz-option" onclick="quizAnswer(1,'intermediate')">1–3 years</button>
+          <button class="quiz-option" onclick="quizAnswer(1,'experienced')">3–7 years</button>
+          <button class="quiz-option" onclick="quizAnswer(1,'expert')">7+ years / Professional</button>
+        </div>
+      </div>
+
+      <div id="quiz-step-2" class="quiz-step">
+        <div style="font-size:0.82rem;font-weight:600;color:var(--bark-mid)">Your current hourly rate?</div>
+        <div class="quiz-options">
+          <button class="quiz-option" onclick="quizAnswer(2,'under10')">Under $10/hr</button>
+          <button class="quiz-option" onclick="quizAnswer(2,'10to20')">$10–20/hr</button>
+          <button class="quiz-option" onclick="quizAnswer(2,'20to35')">$20–35/hr</button>
+          <button class="quiz-option" onclick="quizAnswer(2,'over35')">$35+/hr</button>
+        </div>
+      </div>
+
+      <div id="quiz-result" style="display:none" class="quiz-result">
+        <strong id="quiz-verdict"></strong>
+        <span id="quiz-detail"></span>
+      </div>
+
+      <button class="btn btn-ghost btn-sm" onclick="resetQuiz()" style="margin-top:0.6rem;display:none" id="quiz-reset-btn">↩ Retake Quiz</button>
+    </div>
+
+    <!-- GOAL MODE CARD -->
+    <div class="card goal-card" id="goal-mode-card">
+      <div class="card-header">
+        <div class="card-title">🎯 Income Goal <span class="badge pro">goal mode</span></div>
+      </div>
+      <div class="field">
+        <label>Monthly Income Goal</label>
+        <div class="input-row">
+          <span class="pfx">$</span>
+          <input type="number" id="income-goal" value="2000" min="0" step="100" oninput="calcGoal()">
+          <span class="sfx">/mo</span>
+        </div>
+      </div>
+      <div class="goal-result" id="goal-result">Fill in your costs first, then set your goal.</div>
+    </div>
+
+    <!-- SAVED PRODUCTS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📋 My Shop Sheet <span class="badge">saved</span></div>
+        <button class="btn btn-secondary btn-sm" onclick="clearProducts()">Clear</button>
+      </div>
+      <div id="no-products" style="font-size:0.78rem;color:var(--bark-light);text-align:center;padding:1rem 0">No products saved yet.<br>Fill in your costs and hit "Save Product".</div>
+      <table class="products-table" id="products-table" style="display:none">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Platform</th>
+            <th>Price</th>
+            <th>Profit</th>
+            <th>Wholesale</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="products-tbody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="right-panel">
+
+    <!-- COST INPUTS + RESULTS in a row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start">
+
+      <!-- COST INPUTS -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📦 Your Costs</div>
+        </div>
+
+        <div class="field">
+          <label>Product Name (optional)</label>
+          <input type="text" id="product-name" placeholder="e.g. Macramé Wall Hanging">
+        </div>
+
+        <div class="field">
+          <label>Materials & Supplies</label>
+          <div class="input-row">
+            <span class="pfx">$</span>
+            <input type="number" id="materials" value="0" min="0" step="0.01" oninput="calculate()">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Packaging</label>
+          <div class="input-row">
+            <span class="pfx">$</span>
+            <input type="number" id="packaging" value="0" min="0" step="0.01" oninput="calculate()">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Time to Make</label>
+          <div class="input-row">
+            <span class="pfx" style="left:0.5rem">⏱</span>
+            <input type="number" id="hours" value="0" min="0" step="0.25" oninput="calculate()">
+            <span class="sfx">hrs</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Your Hourly Rate</label>
+          <div class="input-row">
+            <span class="pfx">$</span>
+            <input type="number" id="hourly" value="15" min="0" step="1" oninput="calculate()">
+            <span class="sfx">/hr</span>
+          </div>
+          <div class="hint">What you want to pay yourself</div>
+        </div>
+
+        <div class="field">
+          <label>Shipping (if absorbed)</label>
+          <div class="input-row">
+            <span class="pfx">$</span>
+            <input type="number" id="shipping" value="0" min="0" step="0.01" oninput="calculate()">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field">
+          <label>Desired Profit Margin</label>
+          <div class="input-row">
+            <span class="pfx" style="left:0.5rem">%</span>
+            <input type="number" id="margin" value="25" min="0" max="85" step="5" oninput="calculate()">
+            <span class="sfx">margin</span>
+          </div>
+          <div class="hint">Recommended: 20–40% for handmade</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="toggle-row">
+          <span>🍂 Holiday / Seasonal Markup (Q4)</span>
+          <label class="toggle">
+            <input type="checkbox" id="seasonal-toggle" onchange="calculate()">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="seasonal-note" id="seasonal-note">
+          🎄 +20% seasonal markup applied. Q4 demand supports premium pricing!
+        </div>
+
+        <div id="platform-fees-info" style="margin-top:0.8rem;font-size:0.72rem;color:var(--bark-light);background:#F9FAFB;border-radius:6px;padding:0.5rem 0.7rem;border:1px solid var(--border)"></div>
+      </div>
+
+      <!-- RESULTS -->
+      <div>
+        <div class="results-card">
+          <div class="results-header">
+            <div class="results-title">💰 Your Results</div>
+            <div class="platform-fee-note" id="platform-fee-note">Etsy rates · 2024</div>
+          </div>
+
+          <div class="prices-grid">
+            <div class="price-box primary">
+              <div class="price-box-label">Recommended</div>
+              <div class="price-box-value" id="recommended-price">$0.00</div>
+              <div class="price-box-sub">with your margin</div>
+            </div>
+            <div class="price-box">
+              <div class="price-box-label">Break-Even</div>
+              <div class="price-box-value" id="breakeven">$0.00</div>
+              <div class="price-box-sub">minimum safe price</div>
+            </div>
+            <div class="price-box">
+              <div class="price-box-label">Wholesale</div>
+              <div class="price-box-value" id="wholesale-price-sm">$0.00</div>
+              <div class="price-box-sub">50% of retail</div>
+            </div>
+          </div>
+
+          <div class="hourly-worth" id="hourly-worth-note">Enter your costs to see your effective hourly rate.</div>
+
+          <div class="breakdown">
+            <div class="breakdown-row">
+              <span class="breakdown-label">Platform fees</span>
+              <span class="breakdown-value red" id="platform-fees">$0.00</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-label">Your labor cost</span>
+              <span class="breakdown-value" id="labor-cost">$0.00</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-label">Total cost of goods</span>
+              <span class="breakdown-value" id="cogs">$0.00</span>
+            </div>
+            <hr class="section-line">
+            <div class="breakdown-row">
+              <span class="breakdown-label">Profit per sale</span>
+              <span class="breakdown-value green" id="profit-per-sale">$0.00</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-label">Annual profit (100 sales/mo)</span>
+              <span class="breakdown-value green" id="annual-profit">$0.00</span>
+            </div>
+          </div>
+
+          <!-- Category Suggestion -->
+          <div class="category-suggest" id="category-suggest"></div>
+
+          <div class="my-price-row">
+            <label>Current price</label>
+            <div class="price-input-wrap">
+              <span class="pfx">$</span>
+              <input type="number" id="current-price" placeholder="0.00" min="0" step="0.01" oninput="checkCurrentPrice()">
+            </div>
+          </div>
+          <div class="alert-banner" id="price-alert"></div>
+        </div>
+
+        <!-- WHOLESALE DETAIL -->
+        <div class="card" style="margin-top:1.2rem">
+          <div class="card-header">
+            <div class="card-title">🏪 Wholesale Pricing <span class="badge pro">boutique-ready</span></div>
+          </div>
+          <div class="wholesale-price">
+            <div class="wlbl">Wholesale Price</div>
+            <div class="wval" id="wholesale-price-lg">$0.00</div>
+            <div class="wsub">50% of your retail price · standard industry rate</div>
+          </div>
+          <div style="font-size:0.78rem;color:var(--bark-light);line-height:1.6">
+            When pitching to boutiques or gift shops, your wholesale price is what they pay. They typically mark it up 2× for their retail customers. Make sure your retail price is high enough that wholesale is still profitable for you.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW: Competitor + Category -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem">
+
+      <!-- COMPETITOR PRICING -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">🔍 Competitor Prices</div>
+          <button class="btn btn-secondary btn-sm" onclick="addComp()">+ Add</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--bark-light);margin-bottom:0.9rem;line-height:1.4">Add similar Etsy listings to benchmark your price against the market.</p>
+
+        <div id="comp-list">
+          <div class="comp-entry">
+            <input type="text" placeholder="Shop / item name" oninput="analyzeCompetitors()" style="padding:0.5rem 0.6rem">
+            <div class="comp-price-wrap">
+              <span class="pfx">$</span>
+              <input type="number" placeholder="0.00" min="0" step="0.01" oninput="analyzeCompetitors()">
+            </div>
+            <button class="remove-btn" onclick="removeComp(this)">×</button>
+          </div>
+          <div class="comp-entry">
+            <input type="text" placeholder="Shop / item name" oninput="analyzeCompetitors()" style="padding:0.5rem 0.6rem">
+            <div class="comp-price-wrap">
+              <span class="pfx">$</span>
+              <input type="number" placeholder="0.00" min="0" step="0.01" oninput="analyzeCompetitors()">
+            </div>
+            <button class="remove-btn" onclick="removeComp(this)">×</button>
+          </div>
+        </div>
+
+        <div id="comp-analysis" style="margin-top:0.8rem;display:none">
+          <div id="comp-bars"></div>
+          <div class="comp-summary" id="comp-summary"></div>
+        </div>
+      </div>
+
+      <!-- SHARE CARD PREVIEW -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📤 Shareable Price Card <span class="badge new">viral</span></div>
+          <button class="btn btn-primary btn-sm" onclick="copyShareCard()">Copy Image</button>
+        </div>
+        <p style="font-size:0.75rem;color:var(--bark-light);margin-bottom:0.9rem;line-height:1.4">Share your pricing breakdown in seller communities to get feedback and attract buyers.</p>
+
+        <div class="share-card-preview" id="share-card">
+          <div class="share-card-inner">
+            <div class="sc-logo">PriceRight ✦</div>
+            <div class="sc-product" id="sc-product-name">Your Product</div>
+            <div class="sc-price" id="sc-main-price">$0.00</div>
+            <div class="sc-sub">Recommended retail price</div>
+            <div class="sc-stats">
+              <div class="sc-stat">
+                <div class="sc-stat-val" id="sc-profit">$0</div>
+                <div class="sc-stat-lbl">Profit/sale</div>
+              </div>
+              <div class="sc-stat">
+                <div class="sc-stat-val" id="sc-margin">0%</div>
+                <div class="sc-stat-lbl">Margin</div>
+              </div>
+              <div class="sc-stat">
+                <div class="sc-stat-val" id="sc-wholesale">$0</div>
+                <div class="sc-stat-lbl">Wholesale</div>
+              </div>
+            </div>
+            <div class="sc-tag">priceright.shop</div>
+          </div>
+        </div>
+
+        <div style="margin-top:0.7rem;font-size:0.72rem;color:var(--bark-light);text-align:center">
+          Post this in Etsy seller groups to get pricing feedback 🎯
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ── EMAIL CAPTURE BANNER ── -->
+<div class="email-banner">
+  <h2>Get the free <em>Pricing Playbook</em> 📖</h2>
+  <p>The exact framework for pricing handmade goods profitably — including scripts for raising your prices without losing customers. Free PDF, straight to your inbox.</p>
+
+  <div class="email-form" id="email-form">
+    <input type="email" id="email-input" placeholder="your@email.com">
+    <button onclick="submitEmail()">Send me the guide →</button>
+  </div>
+
+  <div class="email-success" id="email-success">
+    🎉 You're in! Check your inbox for <strong>The Handmade Seller's Pricing Playbook</strong>. (Check spam if you don't see it in 5 min.)
+  </div>
+
+  <div class="email-perks">
+    <span>✓ Free forever</span>
+    <span>✓ No spam, ever</span>
+    <span>✓ Unsubscribe anytime</span>
+    <span>✓ Etsy fee updates included</span>
+  </div>
+</div>
+
+<!-- ── AFFILIATE TOOLS SECTION ── -->
+<div style="background:#F9FAFB; border-top: 1px solid var(--border); padding: 2rem 1.5rem;">
+  <div style="max-width:900px; margin: 0 auto;">
+    <div class="affiliate-title">🛠 Tools I Actually Use & Recommend</div>
+    <div class="affiliate-sub">These are tools that help Etsy sellers run better shops. Some links are affiliate links — I earn a small commission at no cost to you.</div>
+
+    <div class="affiliate-grid">
+
+      <a class="affiliate-card" href="https://www.canva.com" target="_blank" rel="noopener" onclick="trackEvent('affiliate_click','monetization','canva')">
+        <span class="aff-emoji">🎨</span>
+        <div class="aff-name">Canva Pro</div>
+        <div class="aff-desc">Design stunning product photos, shop banners, and social content. The #1 tool for Etsy sellers.</div>
+        <span class="aff-badge">Design</span>
+      </a>
+
+      <a class="affiliate-card" href="https://www.tailwindapp.com" target="_blank" rel="noopener" onclick="trackEvent('affiliate_click','monetization','tailwind')">
+        <span class="aff-emoji">📌</span>
+        <div class="aff-name">Tailwind</div>
+        <div class="aff-desc">Schedule Pinterest & Instagram posts automatically. Drives massive free traffic to your Etsy shop.</div>
+        <span class="aff-badge">Marketing</span>
+      </a>
+
+      <a class="affiliate-card" href="https://erank.com" target="_blank" rel="noopener" onclick="trackEvent('affiliate_click','monetization','erank')">
+        <span class="aff-emoji">🔍</span>
+        <div class="aff-name">eRank</div>
+        <div class="aff-desc">SEO research tool built for Etsy. Find the keywords buyers actually search for your products.</div>
+        <span class="aff-badge">SEO</span>
+      </a>
+
+      <a class="affiliate-card" href="https://www.a2xaccounting.com" target="_blank" rel="noopener" onclick="trackEvent('affiliate_click','monetization','a2x')">
+        <span class="aff-emoji">📊</span>
+        <div class="aff-name">A2X Accounting</div>
+        <div class="aff-desc">Automatically sync your Etsy sales to QuickBooks or Xero. Tax time made painless.</div>
+        <span class="aff-badge">Finance</span>
+      </a>
+
+      <a class="affiliate-card" href="https://www.shipstation.com" target="_blank" rel="noopener" onclick="trackEvent('affiliate_click','monetization','shipstation')">
+        <span class="aff-emoji">📦</span>
+        <div class="aff-name">ShipStation</div>
+        <div class="aff-desc">Print discounted shipping labels, manage orders from all your platforms in one place.</div>
+        <span class="aff-badge">Shipping</span>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  PriceRight · Built for makers who mean business · Calculations are estimates. Platform fees may vary. <strong>Last fee update: Jan 2025</strong>
+  <br style="margin-bottom:0.3rem">
+  <span style="opacity:0.6">Some links above are affiliate links. This helps keep PriceRight free. ♥</span>
+</footer>
+
+<!-- ── BUY ME A COFFEE FLOAT ── -->
+<div class="bmc-float">
+  <div class="bmc-bubble">☕ This tool is free — tip if it helped!</div>
+  <a class="bmc-btn" href="https://buymeacoffee.com/YOUR_USERNAME" target="_blank" rel="noopener" onclick="trackEvent('bmc_click','monetization','buy_me_coffee')">
+    ☕ Buy me a coffee
+  </a>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────
+// PLATFORM CONFIGS
+// ─────────────────────────────────────────
+const PLATFORMS = {
+  etsy: {
+    name: 'Etsy',
+    listing: 0.20,
+    transaction: 0.065,
+    payment: 0.03,
+    note: 'Etsy rates · 2024',
+    info: '$0.20 listing fee · 6.5% transaction · ~3% payment processing',
+    feeAlert: null
+  },
+  shopify: {
+    name: 'Shopify',
+    listing: 0,
+    transaction: 0.02, // basic plan
+    payment: 0.029,
+    fixedPayment: 0.30,
+    note: 'Shopify Basic · 2024',
+    info: '2% transaction + 2.9% + $0.30 payment processing (Basic Plan)',
+    feeAlert: null
+  },
+  amazon: {
+    name: 'Amazon Handmade',
+    listing: 0,
+    transaction: 0.15,
+    payment: 0,
+    note: 'Amazon Handmade · 2024',
+    info: '15% referral fee (min $1.00). No listing fee for Handmade sellers.',
+    feeAlert: '🔔 Amazon raised Handmade referral fees to 15% in 2023. Your old calculations may be off!'
+  },
+  ebay: {
+    name: 'eBay',
+    listing: 0,
+    transaction: 0.1325,
+    payment: 0,
+    note: 'eBay · 2024',
+    info: '13.25% final value fee (most categories). No separate payment processing fee.',
+    feeAlert: null
+  }
+};
+
+let currentPlatform = 'etsy';
+let products = JSON.parse(localStorage.getItem('pr_products') || '[]');
+let goalModeActive = false;
+let quizAnswers = {};
+let quizStep = 0;
+
+// ─────────────────────────────────────────
+// PLATFORM SWITCH
+// ─────────────────────────────────────────
+function setPlatform(platform, btn) {
+  currentPlatform = platform;
+  document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  const p = PLATFORMS[platform];
+  document.getElementById('platform-fee-note').textContent = p.note;
+  document.getElementById('platform-fees-info').textContent = p.info;
+
+  const alertEl = document.getElementById('fee-alert');
+  if (p.feeAlert) {
+    document.getElementById('fee-alert-text').textContent = p.feeAlert;
+    alertEl.style.display = 'flex';
+  } else {
+    alertEl.style.display = 'none';
+  }
+
+  trackEvent('platform_switch', 'engagement', platform);
+  calculate();
+}
+
+// ─────────────────────────────────────────
+// MAIN CALCULATOR
+// ─────────────────────────────────────────
+function calcFees(price) {
+  const p = PLATFORMS[currentPlatform];
+  const fixed = (p.fixedPayment || 0) + p.listing;
+  const pct = p.transaction + p.payment;
+  return fixed + (pct * price);
+}
+
+function solveForPrice(baseCost, marginPct) {
+  const p = PLATFORMS[currentPlatform];
+  const fixedFees = (p.fixedPayment || 0) + p.listing;
+  const pctFees = p.transaction + p.payment;
+  const denom = 1 - pctFees - (marginPct / 100);
+  if (denom <= 0) return 0;
+  return (baseCost + fixedFees) / denom;
+}
+
+function calculate() {
+  const materials = parseFloat(document.getElementById('materials').value) || 0;
+  const packaging = parseFloat(document.getElementById('packaging').value) || 0;
+  const hours     = parseFloat(document.getElementById('hours').value) || 0;
+  const hourly    = parseFloat(document.getElementById('hourly').value) || 0;
+  const shipping  = parseFloat(document.getElementById('shipping').value) || 0;
+  const marginPct = parseFloat(document.getElementById('margin').value) || 0;
+  const seasonal  = document.getElementById('seasonal-toggle').checked;
+
+  document.getElementById('seasonal-note').classList.toggle('show', seasonal);
+
+  const labor = hours * hourly;
+  const baseCost = materials + packaging + labor + shipping;
+
+  let margin = seasonal ? Math.min(marginPct + 20, 85) : marginPct;
+
+  const recommended = solveForPrice(baseCost, margin);
+  const breakeven   = solveForPrice(baseCost, 0);
+  const fees        = calcFees(recommended);
+  const profit      = recommended * (margin / 100);
+  const wholesale   = recommended * 0.5;
+
+  // Update main display
+  document.getElementById('recommended-price').textContent = fmt(recommended);
+  document.getElementById('breakeven').textContent = fmt(breakeven);
+  document.getElementById('wholesale-price-sm').textContent = fmt(wholesale);
+  document.getElementById('wholesale-price-lg').textContent = fmt(wholesale);
+  document.getElementById('platform-fees').textContent = fmt(fees);
+  document.getElementById('labor-cost').textContent = fmt(labor);
+  document.getElementById('cogs').textContent = fmt(baseCost);
+  document.getElementById('profit-per-sale').textContent = fmt(profit);
+  document.getElementById('annual-profit').textContent = fmt(profit * 100 * 12);
+
+  // Share card sync
+  const name = document.getElementById('product-name').value || 'Your Product';
+  document.getElementById('sc-product-name').textContent = name;
+  document.getElementById('sc-main-price').textContent = fmt(recommended);
+  document.getElementById('sc-profit').textContent = fmt(profit);
+  document.getElementById('sc-margin').textContent = Math.round(margin) + '%';
+  document.getElementById('sc-wholesale').textContent = fmt(wholesale);
+
+  // Hourly worth feedback
+  const effectiveHourly = hours > 0 ? profit / hours : 0;
+  const hwNote = document.getElementById('hourly-worth-note');
+  if (recommended > 0 && hours > 0) {
+    const comparison = effectiveHourly >= hourly
+      ? `✅ At this price, your <strong>effective profit rate is $${effectiveHourly.toFixed(2)}/hr</strong> — on target with your $${hourly}/hr goal.`
+      : `⚠️ Your <strong>effective profit rate is $${effectiveHourly.toFixed(2)}/hr</strong> — below your $${hourly}/hr goal. Try increasing your margin or price.`;
+    hwNote.innerHTML = comparison;
+  } else {
+    hwNote.innerHTML = 'Enter your costs to see your effective hourly rate.';
+  }
+
+  // Category suggestion
+  suggestCategory(recommended);
+
+  checkCurrentPrice();
+  analyzeCompetitors();
+  calcGoal();
+}
+
+function fmt(n) { return '$' + (n || 0).toFixed(2); }
+
+// ─────────────────────────────────────────
+// CURRENT PRICE CHECK
+// ─────────────────────────────────────────
+function checkCurrentPrice() {
+  const cur = parseFloat(document.getElementById('current-price').value);
+  const rec = parseFloat(document.getElementById('recommended-price').textContent.replace('$',''));
+  const el  = document.getElementById('price-alert');
+  if (!cur || !rec) { el.className = 'alert-banner'; return; }
+  const diff = rec - cur;
+  if (diff > 0.5) {
+    el.className = 'alert-banner warn';
+    el.innerHTML = `⚠️ You're undercharging by <strong>${fmt(diff)}</strong>. At 100 sales = <strong>${fmt(diff*100)}</strong> left on the table.`;
+  } else if (diff < -0.5) {
+    el.className = 'alert-banner good';
+    el.innerHTML = `✓ You're pricing <strong>${fmt(Math.abs(diff))}</strong> above minimum — great positioning!`;
+  } else {
+    el.className = 'alert-banner good';
+    el.innerHTML = `✓ You're right on target!`;
+  }
+}
+
+// ─────────────────────────────────────────
+// CATEGORY SUGGESTION (Feature 9)
+// ─────────────────────────────────────────
+function suggestCategory(price) {
+  const el = document.getElementById('category-suggest');
+  let suggestion = '';
+  if (price <= 0) { el.classList.remove('show'); return; }
+
+  if (price < 10) suggestion = `💡 At <strong>${fmt(price)}</strong>, you're in the <strong>impulse-buy</strong> range. Best categories: stickers, digital downloads, small accessories.`;
+  else if (price < 25) suggestion = `💡 At <strong>${fmt(price)}</strong>, you're in the <strong>gift range</strong>. Best categories: jewelry, candles, greeting cards, soap.`;
+  else if (price < 60) suggestion = `💡 At <strong>${fmt(price)}</strong>, you're in the <strong>considered purchase</strong> range. Best categories: home decor, ceramics, knitwear, custom items.`;
+  else if (price < 150) suggestion = `💡 At <strong>${fmt(price)}</strong>, you're in the <strong>premium handmade</strong> range. Lean into unique materials, custom options, and your story.`;
+  else suggestion = `💡 At <strong>${fmt(price)}</strong>, you're in the <strong>luxury artisan</strong> tier. Focus on exceptional photography, provenance, and limited availability.`;
+
+  el.innerHTML = suggestion;
+  el.classList.add('show');
+}
+
+// ─────────────────────────────────────────
+// COMPETITOR ANALYSIS (Feature from v2)
+// ─────────────────────────────────────────
+function addComp() {
+  const list = document.getElementById('comp-list');
+  const el = document.createElement('div');
+  el.className = 'comp-entry';
+  el.innerHTML = `
+    <input type="text" placeholder="Shop / item name" oninput="analyzeCompetitors()" style="padding:0.5rem 0.6rem">
+    <div class="comp-price-wrap">
+      <span class="pfx">$</span>
+      <input type="number" placeholder="0.00" min="0" step="0.01" oninput="analyzeCompetitors()">
+    </div>
+    <button class="remove-btn" onclick="removeComp(this)">×</button>
+  `;
+  list.appendChild(el);
+}
+
+function removeComp(btn) { btn.closest('.comp-entry').remove(); analyzeCompetitors(); }
+
+function analyzeCompetitors() {
+  const entries = document.querySelectorAll('.comp-entry');
+  const comps = [];
+  entries.forEach(e => {
+    const name = e.querySelector('input[type="text"]').value.trim() || 'Competitor';
+    const price = parseFloat(e.querySelector('input[type="number"]').value);
+    if (!isNaN(price) && price > 0) comps.push({ name, price });
+  });
+  const div = document.getElementById('comp-analysis');
+  if (!comps.length) { div.style.display = 'none'; return; }
+
+  const myPrice = parseFloat(document.getElementById('recommended-price').textContent.replace('$','')) || 0;
+  const all = myPrice > 0 ? [myPrice, ...comps.map(c=>c.price)] : comps.map(c=>c.price);
+  const maxP = Math.max(...all);
+  const avg  = comps.reduce((s,c)=>s+c.price,0)/comps.length;
+  const minP = Math.min(...comps.map(c=>c.price));
+  const maxC = Math.max(...comps.map(c=>c.price));
+
+  const colors = ['#6366F1','#EC4899','#F59E0B','#10B981','#3B82F6','#8B5CF6'];
+  let html = '';
+  if (myPrice > 0) {
+    const w = Math.round((myPrice/maxP)*100);
+    html += `<div class="comp-bar-row"><div class="comp-bar-label"><span>⭐ Your Price</span><span>${fmt(myPrice)}</span></div><div class="comp-bar-track"><div class="comp-bar-fill" style="width:${w}%;background:var(--clay)"></div></div></div>`;
+  }
+  comps.forEach((c,i) => {
+    const w = Math.round((c.price/maxP)*100);
+    html += `<div class="comp-bar-row"><div class="comp-bar-label"><span>${c.name}</span><span>${fmt(c.price)}</span></div><div class="comp-bar-track"><div class="comp-bar-fill" style="width:${w}%;background:${colors[i%colors.length]}"></div></div></div>`;
+  });
+  document.getElementById('comp-bars').innerHTML = html;
+
+  let summary = `Market range: <strong>${fmt(minP)} – ${fmt(maxC)}</strong>. Avg: <strong>${fmt(avg)}</strong>.`;
+  if (myPrice > 0) {
+    const d = myPrice - avg;
+    if (d > 1) summary += ` You're <strong style="color:var(--clay)">${fmt(d)} above avg</strong> — ensure your branding justifies the premium.`;
+    else if (d < -1) summary += ` You're <strong style="color:var(--sage)">${fmt(Math.abs(d))} below avg</strong> — you may have room to charge more!`;
+    else summary += ` You're <strong>right in line</strong> with the market.`;
+  }
+  document.getElementById('comp-summary').innerHTML = summary;
+  div.style.display = 'block';
+}
+
+// ─────────────────────────────────────────
+// GOAL MODE (Feature 5)
+// ─────────────────────────────────────────
+function toggleGoalMode() {
+  goalModeActive = !goalModeActive;
+  document.getElementById('goal-mode-card').classList.toggle('active', goalModeActive);
+  document.getElementById('goal-banner').classList.toggle('active', goalModeActive);
+  if (goalModeActive) trackEvent('goal_mode_opened', 'engagement', 'goal_mode');
+  calcGoal();
+}
+
+function calcGoal() {
+  if (!goalModeActive) return;
+  const goal = parseFloat(document.getElementById('income-goal').value) || 0;
+  const profit = parseFloat(document.getElementById('profit-per-sale').textContent.replace('$','')) || 0;
+  const rec = document.getElementById('recommended-price').textContent;
+
+  document.getElementById('goal-display').textContent = '$' + goal.toLocaleString();
+
+  if (profit <= 0 || goal <= 0) {
+    document.getElementById('goal-result').innerHTML = 'Enter your costs above to calculate.';
+    document.getElementById('goal-units').textContent = '—';
+    return;
+  }
+  const unitsPerMonth = Math.ceil(goal / profit);
+  const unitsPerDay   = (unitsPerMonth / 30).toFixed(1);
+  const unitsPerWeek  = Math.ceil(unitsPerMonth / 4.3);
+
+  document.getElementById('goal-units').textContent = unitsPerMonth;
+  document.getElementById('goal-result').innerHTML = `
+    To earn <strong>$${goal.toLocaleString()}/mo</strong> at ${rec} per sale, you need:<br>
+    <strong>${unitsPerMonth} sales/month</strong> · ${unitsPerWeek} sales/week · ${unitsPerDay} sales/day<br>
+    <span style="font-size:0.75rem;color:var(--bark-light)">Based on ${fmt(profit)} profit per sale</span>
+  `;
+}
+
+// ─────────────────────────────────────────
+// SAVE PRODUCTS (Feature 6 — Shop Sheet)
+// ─────────────────────────────────────────
+function saveProduct() {
+  const name    = document.getElementById('product-name').value || 'Unnamed Product';
+  const price   = document.getElementById('recommended-price').textContent;
+  const profit  = document.getElementById('profit-per-sale').textContent;
+  const ws      = document.getElementById('wholesale-price-lg').textContent;
+  const platform = PLATFORMS[currentPlatform].name;
+
+  products.push({ name, price, profit, ws, platform, date: new Date().toLocaleDateString() });
+  localStorage.setItem('pr_products', JSON.stringify(products));
+  renderProducts();
+  trackEvent('product_saved', 'engagement', name);
+  showToast(`✅ "${name}" saved to your shop sheet!`);
+}
+
+function renderProducts() {
+  const table = document.getElementById('products-table');
+  const empty = document.getElementById('no-products');
+  const tbody = document.getElementById('products-tbody');
+
+  if (!products.length) { table.style.display = 'none'; empty.style.display = 'block'; return; }
+  table.style.display = 'table'; empty.style.display = 'none';
+
+  tbody.innerHTML = products.map((p, i) => `
+    <tr>
+      <td>${p.name}</td>
+      <td style="color:var(--bark-light);font-size:0.75rem">${p.platform}</td>
+      <td class="price-cell">${p.price}</td>
+      <td class="profit-cell">${p.profit}</td>
+      <td style="color:var(--indigo);font-weight:600">${p.ws}</td>
+      <td><button class="del-btn" onclick="deleteProduct(${i})">×</button></td>
+    </tr>
+  `).join('');
+}
+
+function deleteProduct(i) {
+  products.splice(i, 1);
+  localStorage.setItem('pr_products', JSON.stringify(products));
+  renderProducts();
+}
+
+function clearProducts() {
+  if (!products.length) return;
+  products = [];
+  localStorage.setItem('pr_products', JSON.stringify(products));
+  renderProducts();
+}
+
+// ─────────────────────────────────────────
+// SHARE CARD (Feature 7)
+// ─────────────────────────────────────────
+function showShareCard() {
+  trackEvent('share_card_viewed', 'engagement', 'share_card');
+  showToast('📤 Screenshot the card below and share it in Etsy seller Facebook groups!');
+}
+
+function copyShareCard() {
+  trackEvent('share_card_copied', 'engagement', 'share_card');
+  showToast('📋 Screenshot the card below and share it in Etsy seller Facebook groups!');
+}
+
+// ─────────────────────────────────────────
+// HOURLY WORTH QUIZ (Feature 1)
+// ─────────────────────────────────────────
+const QUIZ_BENCHMARKS = {
+  jewelry:    { beginner: [8,15],  intermediate: [15,25], experienced: [25,45], expert: [45,80] },
+  textiles:   { beginner: [7,12],  intermediate: [12,22], experienced: [22,40], expert: [40,75] },
+  ceramics:   { beginner: [10,18], intermediate: [18,30], experienced: [30,55], expert: [55,100] },
+  digital:    { beginner: [15,25], intermediate: [25,45], experienced: [45,80], expert: [80,150] },
+  woodwork:   { beginner: [12,20], intermediate: [20,35], experienced: [35,65], expert: [65,120] },
+};
+
+const RATE_MAP = { under10: 7, '10to20': 15, '20to35': 27, over35: 45 };
+
+function quizAnswer(step, value) {
+  quizAnswers[step] = value;
+  document.querySelectorAll(`#quiz-step-${step} .quiz-option`).forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+
+  setTimeout(() => {
+    if (step < 2) {
+      document.getElementById(`quiz-step-${step}`).classList.remove('active');
+      document.getElementById(`quiz-step-${step+1}`).classList.add('active');
+      quizStep = step + 1;
+    } else {
+      showQuizResult();
+    }
+  }, 350);
+}
+
+function showQuizResult() {
+  const niche = quizAnswers[0];
+  const exp   = quizAnswers[1];
+  const rateKey = quizAnswers[2];
+  const userRate = RATE_MAP[rateKey];
+  const bench = QUIZ_BENCHMARKS[niche]?.[exp] || [12, 25];
+  const [low, high] = bench;
+
+  let verdict, detail;
+  if (userRate < low) {
+    verdict = `⚠️ You're undervaluing your time`;
+    detail  = `For a ${exp.replace('_',' ')} ${niche} maker, the typical hourly rate is $${low}–$${high}/hr. You're at ~$${userRate}/hr — consider raising to at least $${low}/hr. This will be reflected in your recommended prices.`;
+    document.getElementById('hourly').value = low;
+    calculate();
+  } else if (userRate > high) {
+    verdict = `✅ Your rate is competitive`;
+    detail  = `$${userRate}/hr is strong for ${exp} ${niche} makers ($${low}–$${high}/hr range). Make sure your branding matches your pricing tier.`;
+  } else {
+    verdict = `✅ Your rate is right on market`;
+    detail  = `$${userRate}/hr fits well for a ${exp.replace('_',' ')} ${niche} seller (typical: $${low}–$${high}/hr). You're in a good spot!`;
+  }
+
+  document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('quiz-result').style.display = 'block';
+  document.getElementById('quiz-verdict').textContent = verdict;
+  document.getElementById('quiz-detail').textContent = detail;
+  document.getElementById('quiz-reset-btn').style.display = 'block';
+}
+
+function resetQuiz() {
+  quizAnswers = {}; quizStep = 0;
+  document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('quiz-step-0').classList.add('active');
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-reset-btn').style.display = 'none';
+  document.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
+}
+
+// ─────────────────────────────────────────
+// EMAIL CAPTURE — Secure via Netlify Function
+// (API token is stored in Netlify env variables, never exposed here)
+// ─────────────────────────────────────────
+async function submitEmail() {
+  const email = document.getElementById('email-input').value.trim();
+  if (!email || !email.includes('@')) {
+    showToast('⚠️ Please enter a valid email address.');
+    return;
+  }
+
+  const btn = document.querySelector('.email-form button');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    const response = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      trackEvent('email_signup', 'conversion', 'pricing_playbook');
+      document.getElementById('email-form').style.display = 'none';
+      document.getElementById('email-success').style.display = 'block';
+      showToast('✅ Welcome aboard! Check your inbox.');
+    } else {
+      throw new Error(data.error || 'Signup failed');
+    }
+
+  } catch (err) {
+    btn.textContent = 'Send me the guide →';
+    btn.disabled = false;
+    showToast('⚠️ Something went wrong. Please try again.');
+    console.error('Signup error:', err);
+  }
+}
+
+
+// ─────────────────────────────────────────
+// TOAST
+// ─────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+setPlatform('etsy', document.querySelector('.platform-btn.active'));
+renderProducts();
+calculate();
+</script>
+</body>
+</html>
