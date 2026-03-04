@@ -2,11 +2,61 @@
 // This function runs on Netlify's servers — your API token stays SECRET here.
 // The browser never sees it. It just calls this endpoint.
 
+// Simple in-memory rate limiter
+// Limits each IP to 3 signup attempts per 10 minutes
+const rateLimitMap = new Map();
+const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  if (!entry) {
+    rateLimitMap.set(ip, { count: 1, firstRequest: now });
+    return false;
+  }
+
+  // Reset window if expired
+  if (now - entry.firstRequest > RATE_LIMIT_WINDOW_MS) {
+    rateLimitMap.set(ip, { count: 1, firstRequest: now });
+    return false;
+  }
+
+  // Within window — check count
+  if (entry.count >= RATE_LIMIT_MAX) {
+    return true;
+  }
+
+  entry.count++;
+  return false;
+}
+
+// Basic email validation
+function isValidEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+}
+
 exports.handler = async function(event, context) {
 
   // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
+  }
+
+  // Get client IP for rate limiting
+  const clientIP = event.headers['x-forwarded-for'] || 
+                   event.headers['client-ip'] || 
+                   'unknown';
+
+  // Check rate limit
+  if (isRateLimited(clientIP)) {
+    return {
+      statusCode: 429,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Too many requests. Please try again in 10 minutes.' })
+    };
   }
 
   // Parse the email from the request
@@ -15,21 +65,38 @@ exports.handler = async function(event, context) {
     const body = JSON.parse(event.body);
     email = body.email;
   } catch (e) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid request body' }) };
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Invalid request body' })
+    };
   }
 
-  // Basic email validation
-  if (!email || !email.includes('@')) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid email address' }) };
+  // Validate email format
+  if (!email || !isValidEmail(email)) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Invalid email address' })
+    };
+  }
+
+  // Limit email length to prevent abuse
+  if (email.length > 254) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Invalid email address' })
+    };
   }
 
   // ── YOUR SENDFOX CONFIG ──
-  // These are stored as Netlify Environment Variables — NOT hardcoded here
+  // Stored as Netlify Environment Variables — NOT hardcoded here
   const SENDFOX_TOKEN = process.env.SENDFOX_TOKEN;
   const SENDFOX_LIST_ID = process.env.SENDFOX_LIST_ID;
 
   if (!SENDFOX_TOKEN || !SENDFOX_LIST_ID) {
-    return { statusCode: 500, body: JSON.stringify({ error: 'Server configuration error' }) };
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: 'Server configuration error' })
+    };
   }
 
   try {
